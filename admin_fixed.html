@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShuttleMaster - অ্যাডমিন কন্ট্রোল প্যানেল</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Hind Siliguri', system-ui, sans-serif; background-color: #030712; color: #f9fafb; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center font-bold text-white shadow">
+        🛡️
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-white">ShuttleMaster অ্যাডমিন প্যানেল</h1>
+        <p class="text-xs text-amber-400">টুর্নামেন্ট, ইউজার, রেজিস্ট্রেশন ও পেমেন্ট নিয়ন্ত্রণ</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-emerald-400 font-semibold">● লাইভ সার্ভার কানেক্টেড</span>
+      <a href="user.html" target="_blank" class="px-3 py-1.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-200">ইউজার অ্যাপ ↗</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-8">
+
+    <!-- Interactive Dashboard Statistics -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div onclick="setTab('tournaments')" class="bg-slate-900 border border-slate-800 hover:border-amber-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-slate-400">মোট টুর্নামেন্ট</p>
+        <p id="statTournaments" class="text-2xl font-bold text-white mt-1">০ টি</p>
+      </div>
+      <div onclick="setTab('users')" class="bg-slate-900 border border-slate-800 hover:border-blue-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-slate-400">মোট ইউজার</p>
+        <p id="statUsers" class="text-2xl font-bold text-blue-400 mt-1">০ জন</p>
+      </div>
+      <div onclick="setTab('regs', 'Pending')" class="bg-slate-900 border border-amber-900/50 hover:border-amber-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-amber-400">অপেক্ষমান (Pending)</p>
+        <p id="statPending" class="text-2xl font-bold text-amber-300 mt-1">০ টি</p>
+      </div>
+      <div onclick="setTab('regs', 'Approved')" class="bg-slate-900 border border-emerald-900/50 hover:border-emerald-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-emerald-400">অনুমোদিত (Approved)</p>
+        <p id="statApproved" class="text-2xl font-bold text-emerald-300 mt-1">০ টি</p>
+      </div>
+      <div onclick="setTab('regs', 'Rejected')" class="bg-slate-900 border border-red-900/50 hover:border-red-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-red-400">বাতিল (Rejected)</p>
+        <p id="statRejected" class="text-2xl font-bold text-red-300 mt-1">০ টি</p>
+      </div>
+      <div onclick="setTab('regs', 'Approved')" class="bg-slate-900 border border-slate-800 hover:border-yellow-500 p-4 rounded-xl cursor-pointer transition">
+        <p class="text-xs text-slate-400">সংগৃহীত এন্ট্রি ফি</p>
+        <p id="statRevenue" class="text-2xl font-bold text-yellow-400 mt-1">৳০</p>
+      </div>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <div class="flex gap-2 border-b border-slate-800 pb-3 text-sm overflow-x-auto">
+      <button onclick="setTab('tournaments')" id="tabTournaments" class="px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap">টুর্নামেন্ট পরিচালনা</button>
+      <button onclick="setTab('regs')" id="tabRegs" class="px-4 py-2 font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">রেজিস্ট্রেশন যাচাই</button>
+      <button onclick="setTab('users')" id="tabUsers" class="px-4 py-2 font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">ইউজার কন্ট্রোল (ব্লক/আনব্লক)</button>
+      <button onclick="setTab('payments')" id="tabPayments" class="px-4 py-2 font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">পেমেন্ট সেটিংস</button>
+      <button onclick="setTab('content')" id="tabContent" class="px-4 py-2 font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap">ব্যানার ও স্লাইডার</button>
+    </div>
+
+    <!-- Panel 1: Tournaments Management -->
+    <div id="panelTournaments" class="space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-bold text-white">টুর্নামেন্ট পরিচালনা</h3>
+          <p class="text-xs text-slate-400">টুর্নামেন্ট যোগ, এডিট, স্থগিত (List Off) বা ডিলিট করুন</p>
+        </div>
+        <button onclick="openNewTournamentModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow">+ নতুন টুর্নামেন্ট তৈরি</button>
+      </div>
+      <div id="tournamentsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+
+    <!-- Panel 2: Registrations Management -->
+    <div id="panelRegs" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-bold text-white">খেলোয়াড়দের রেজিস্ট্রেশন ও পেমেন্ট তালিকা</h3>
+          <p class="text-xs text-slate-400">TrxID মিলিয়ে Approve বা Reject করুন</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="filterAdminRegs('All')" class="px-3 py-1 bg-slate-800 text-white rounded text-xs">সকল</button>
+          <button onclick="filterAdminRegs('Pending')" class="px-3 py-1 bg-amber-950 text-amber-300 rounded text-xs">Pending</button>
+          <button onclick="filterAdminRegs('Approved')" class="px-3 py-1 bg-emerald-950 text-emerald-300 rounded text-xs">Approved</button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-800 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">আইডি</th>
+              <th class="p-3">টুর্নামেন্ট</th>
+              <th class="p-3">খেলোয়াড়</th>
+              <th class="p-3">মোবাইল</th>
+              <th class="p-3">ফি</th>
+              <th class="p-3">মেথড ও TrxID</th>
+              <th class="p-3">স্ট্যাটাস</th>
+              <th class="p-3 text-right">অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody id="adminRegsTable" class="divide-y divide-slate-800 text-slate-300"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Panel 3: Users Management (Block / Unblock / Delete) -->
+    <div id="panelUsers" class="hidden space-y-4">
+      <div>
+        <h3 class="text-lg font-bold text-white">ইউজার তালিকা ও নিয়ন্ত্রণ</h3>
+        <p class="text-xs text-slate-400">ইউজারদের ব্লক/আনব্লক করুন বা অ্যাকাউন্ট মুছে ফেলুন</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-800 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="p-3">নাম</th>
+              <th class="p-3">ইমেইল</th>
+              <th class="p-3">মোবাইল</th>
+              <th class="p-3">অবস্থা</th>
+              <th class="p-3">ক্রয়কৃত টুর্নামেন্ট</th>
+              <th class="p-3 text-right">কন্ট্রোল অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersTable" class="divide-y divide-slate-800 text-slate-300"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Panel 4: Payment Settings -->
+    <div id="panelPayments" class="hidden max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3">বিকাশ ও নগদ পেমেন্ট সেটিংস</h3>
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">বিকাশ নম্বর (Send Money)</label>
+          <input type="tel" id="adminBkashNum" placeholder="018XXXXXXXX" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">নগদ নম্বর (Send Money)</label>
+          <input type="tel" id="adminNagadNum" placeholder="017XXXXXXXX" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">পেমেন্ট নির্দেশনা</label>
+          <textarea id="adminPayNote" rows="2" placeholder="নিচের বিকাশ বা নগদ নম্বরে টাকা পাঠিয়ে Transaction ID দিন:" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white"></textarea>
+        </div>
+        <button onclick="saveAppSettings()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">সেটিংস সেভ করুন</button>
+      </div>
+    </div>
+
+    <!-- Panel 5: Banner & Slider -->
+    <div id="panelContent" class="hidden max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3">হোম পেজ ব্যানার ও স্লাইডার নিয়ন্ত্রণ</h3>
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">নোটিশ ব্যানার লেখা (ফাঁকা রাখলে ইউজার অ্যাপে ব্যানার দেখাবে না)</label>
+          <input type="text" id="adminBannerTitle" placeholder="উদাঃ টুর্নামেন্টের রেজিস্ট্রেশন চলছে!" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">স্লাইডার ইমেজ লিংক (URL - ফাঁকা রাখলে স্লাইডার লুকানো থাকবে)</label>
+          <input type="url" id="adminSliderUrl" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">স্লাইডার শিরোনাম</label>
+          <input type="text" id="adminSliderTitle" placeholder="স্লাইডারের টাইটেল" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+        </div>
+        <button onclick="saveAppSettings()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">আপডেট করুন</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tournament Edit/Create Modal -->
+  <div id="editTournamentModal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h4 class="text-sm font-bold text-white">টুর্নামেন্ট যোগ / সম্পাদনা</h4>
+        <button onclick="closeModal('editTournamentModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <form onsubmit="saveTournamentForm(event)" class="space-y-3">
+        <input type="hidden" id="modalTournId">
+        <div>
+          <label class="block text-slate-400 mb-1">টুর্নামেন্টের নাম *</label>
+          <input type="text" id="modalTournTitle" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">ব্যানার ছবি URL *</label>
+          <input type="url" id="modalTournImg" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">বিবরণ</label>
+          <textarea id="modalTournDesc" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">তারিখ *</label>
+            <input type="text" id="modalTournDate" required placeholder="২০২৬-১২-২০" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">এন্ট্রি ফি (৳) *</label>
+            <input type="number" id="modalTournFee" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">ক্যাটাগরি</label>
+            <select id="modalTournCat" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+              <option value="Singles">Singles</option>
+              <option value="Doubles">Doubles</option>
+              <option value="Mixed Doubles">Mixed Doubles</option>
+              <option value="Team">Team</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">টুর্নামেন্ট অবস্থা</label>
+            <select id="modalTournStatus" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-bold">
+              <option value="ongoing">চলমান (Ongoing)</option>
+              <option value="upcoming">আসন্ন (Upcoming)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-white">সংরক্ষণ করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tournament Buyers Modal -->
+  <div id="tournamentBuyersModal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 space-y-4 text-xs">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h4 id="buyersModalTitle" class="text-sm font-bold text-white">অংশগ্রহণকারী তালিকা</h4>
+        <button onclick="closeModal('tournamentBuyersModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div id="buyersListContainer" class="max-h-72 overflow-y-auto space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Firebase Realtime Sync -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtoGNQKSdFvVnfEHazdspeuLj-0bvOlv8",
+      authDomain: "amarapp-f9d71.firebaseapp.com",
+      databaseURL: "https://amarapp-f9d71-default-rtdb.firebaseio.com",
+      projectId: "amarapp-f9d71",
+      storageBucket: "amarapp-f9d71.firebasestorage.app",
+      messagingSenderId: "572039422017",
+      appId: "1:572039422017:web:574878b1750bc081dd66c0",
+      measurementId: "G-RFB95V1R53"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.firebaseDb = db;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.deleteDoc = deleteDoc;
+
+    // 1. Realtime Tournaments Listener
+    onSnapshot(collection(db, 'tournaments'), (snap) => {
+      adminTournaments = [];
+      snap.forEach(d => adminTournaments.push(d.data()));
+      renderStats();
+      renderTournaments();
+    });
+
+    // 2. Realtime Registrations Listener
+    onSnapshot(collection(db, 'registrations'), (snap) => {
+      adminRegs = [];
+      snap.forEach(d => adminRegs.push(d.data()));
+      renderStats();
+      renderTournaments();
+      renderRegistrations(currentRegFilter);
+      renderUsers();
+    });
+
+    // 3. Realtime Users Listener
+    onSnapshot(collection(db, 'users'), (snap) => {
+      adminUsers = [];
+      snap.forEach(d => adminUsers.push(d.data()));
+      renderStats();
+      renderUsers();
+    });
+
+    // 4. Realtime App Settings Listener
+    onSnapshot(doc(db, 'settings', 'app_config'), (docSnap) => {
+      if (docSnap.exists()) {
+        const cfg = docSnap.data();
+        document.getElementById('adminBkashNum').value = cfg.bkashNumber || '';
+        document.getElementById('adminNagadNum').value = cfg.nagadNumber || '';
+        document.getElementById('adminPayNote').value = cfg.paymentNote || '';
+        document.getElementById('adminBannerTitle').value = cfg.bannerText || '';
+        document.getElementById('adminSliderUrl').value = cfg.sliderUrl || '';
+        document.getElementById('adminSliderTitle').value = cfg.sliderTitle || '';
+      }
+    });
+  </script>
+
+  <!-- Admin Panel Logic -->
+  <script>
+    let adminTournaments = [];
+    let adminRegs = [];
+    let adminUsers = [];
+    let currentRegFilter = 'All';
+
+    function renderStats() {
+      document.getElementById('statTournaments').innerText = adminTournaments.length + ' টি';
+      document.getElementById('statUsers').innerText = adminUsers.length + ' জন';
+      document.getElementById('statPending').innerText = adminRegs.filter(r => r.status === 'Pending').length + ' টি';
+      document.getElementById('statApproved').innerText = adminRegs.filter(r => r.status === 'Approved').length + ' টি';
+      document.getElementById('statRejected').innerText = adminRegs.filter(r => r.status === 'Rejected').length + ' টি';
+      const revenue = adminRegs.filter(r => r.status === 'Approved').reduce((acc, c) => acc + (Number(c.entryFee) || 0), 0);
+      document.getElementById('statRevenue').innerText = '৳' + revenue.toLocaleString('bn-BD');
+    }
+
+    function renderTournaments() {
+      const container = document.getElementById('tournamentsListContainer');
+      if (adminTournaments.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-slate-900 rounded-2xl border border-slate-800">কোনো টুর্নামেন্ট যোগ করা হয়নি। উপরে "+ নতুন টুর্নামেন্ট তৈরি" বাটনে ক্লিক করুন।</div>`;
+        return;
+      }
+
+      container.innerHTML = adminTournaments.map(t => {
+        const buyers = adminRegs.filter(r => r.tournamentId === t.id);
+        const isActive = t.isActive !== false;
+        return `
+          <div class="bg-slate-900 border ${isActive ? 'border-slate-800' : 'border-rose-900'} rounded-2xl overflow-hidden shadow p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isActive ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">
+                  ${isActive ? 'সক্রিয় (List On)' : 'স্থগিত (List Off)'}
+                </span>
+                <span class="text-xs text-amber-400 font-bold">৳${t.entryFee}</span>
+              </div>
+              <img src="${t.bannerUrl}" class="h-32 w-full object-cover rounded-lg mb-2">
+              <h4 class="font-bold text-white text-sm">${t.title}</h4>
+              <p class="text-xs text-slate-400 mt-1">তারিখ: ${t.date} | ${t.category}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800 space-y-2">
+              <button onclick="viewTournamentBuyers('${t.id}')" class="w-full py-1.5 bg-amber-600/90 hover:bg-amber-600 text-white rounded text-xs font-bold">
+                অংশগ্রহণকারী দেখুন (${buyers.length})
+              </button>
+              <div class="flex gap-2">
+                <button onclick="toggleTournament('${t.id}')" class="flex-1 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs">
+                  ${isActive ? 'স্থগিত করুন' : 'চালু করুন'}
+                </button>
+                <button onclick="openEditTournamentModal('${t.id}')" class="px-3 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded text-xs">
+                  এডিট
+                </button>
+                <button onclick="deleteTournament('${t.id}')" class="px-2 py-1 bg-rose-900 hover:bg-rose-800 text-rose-200 rounded text-xs">
+                  মুছুন
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleTournament(id) {
+      const t = adminTournaments.find(item => item.id === id);
+      if (t) {
+        await window.setDoc(window.doc(window.firebaseDb, 'tournaments', t.id), {
+          ...t,
+          isActive: t.isActive === false ? true : false
+        });
+      }
+    }
+
+    async function deleteTournament(id) {
+      if (confirm('টুর্নামেন্টটি স্থায়ীভাবে মুছে ফেলতে চান?')) {
+        await window.deleteDoc(window.doc(window.firebaseDb, 'tournaments', id));
+      }
+    }
+
+    function viewTournamentBuyers(tournId) {
+      const t = adminTournaments.find(item => item.id === tournId);
+      const buyers = adminRegs.filter(r => r.tournamentId === tournId);
+      document.getElementById('buyersModalTitle').innerText = (t ? t.title : '') + ' - অংশগ্রহণকারী (' + buyers.length + ')';
+      const container = document.getElementById('buyersListContainer');
+      if (buyers.length === 0) {
+        container.innerHTML = '<div class="py-6 text-center text-slate-400">কেউ এখনও জয়েন করেনি।</div>';
+      } else {
+        container.innerHTML = buyers.map(b => `
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+            <div>
+              <strong class="text-white block">${b.playerName}</strong>
+              <span class="text-[11px] text-slate-400">মোবাইল: ${b.phone} | TrxID: ${b.transactionId} (${b.paymentMethod})</span>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${b.status === 'Approved' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'}">
+              ${b.status}
+            </span>
+          </div>
+        `).join('');
+      }
+      openModal('tournamentBuyersModal');
+    }
+
+    function renderRegistrations(filter) {
+      currentRegFilter = filter;
+      const tbody = document.getElementById('adminRegsTable');
+      let list = adminRegs;
+      if (filter && filter !== 'All') list = adminRegs.filter(r => r.status === filter);
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">কোনো রেজিস্ট্রেশন নেই।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => `
+        <tr>
+          <td class="p-3 font-mono text-slate-400">${r.id}</td>
+          <td class="p-3 font-bold text-white">${r.tournamentTitle}</td>
+          <td class="p-3">${r.playerName}</td>
+          <td class="p-3 font-mono">${r.phone}</td>
+          <td class="p-3 text-amber-400 font-bold">৳${r.entryFee}</td>
+          <td class="p-3"><span class="font-bold text-pink-400">${r.paymentMethod}:</span> ${r.transactionId}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[11px] ${r.status === 'Approved' ? 'bg-emerald-950 text-emerald-400' : r.status === 'Rejected' ? 'bg-rose-950 text-rose-400' : 'bg-amber-950 text-amber-400'}">
+              ${r.status}
+            </span>
+          </td>
+          <td class="p-3 text-right space-x-1">
+            ${r.status === 'Pending' ? `
+              <button onclick="updateRegStatus('${r.id}', 'Approved')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded">Approve</button>
+              <button onclick="updateRegStatus('${r.id}', 'Rejected')" class="px-2.5 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded">Reject</button>
+            ` : `<span class="text-slate-500 text-[11px]">পর্যালোচিত</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateRegStatus(id, newStatus) {
+      const reg = adminRegs.find(r => r.id === id);
+      if (reg) {
+        await window.setDoc(window.doc(window.firebaseDb, 'registrations', reg.id), {
+          ...reg,
+          status: newStatus
+        });
+      }
+    }
+
+    function filterAdminRegs(f) { renderRegistrations(f); }
+
+    function renderUsers() {
+      const tbody = document.getElementById('adminUsersTable');
+      if (adminUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">কোনো ইউজার নিবন্ধিত নেই।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = adminUsers.map(u => {
+        const userPurchases = adminRegs.filter(r => r.userId === u.uid);
+        return `
+          <tr>
+            <td class="p-3 font-bold text-white">${u.name}</td>
+            <td class="p-3 font-mono text-slate-300">${u.email}</td>
+            <td class="p-3 font-mono text-slate-300">${u.phone || 'নেই'}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold ${u.isBlocked ? 'bg-rose-950 text-rose-400' : 'bg-emerald-950 text-emerald-400'}">
+                ${u.isBlocked ? 'ব্লকড (Blocked)' : 'সক্রিয় (Active)'}
+              </span>
+            </td>
+            <td class="p-3 font-bold text-amber-400">${userPurchases.length} টি</td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="toggleBlockUser('${u.uid}')" class="px-3 py-1 rounded text-white font-semibold ${u.isBlocked ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}">
+                ${u.isBlocked ? 'আনব্লক করুন' : 'ব্লক করুন'}
+              </button>
+              <button onclick="deleteUser('${u.uid}')" class="px-2.5 py-1 bg-rose-800 hover:bg-rose-700 text-white rounded">মুছুন</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleBlockUser(uid) {
+      const u = adminUsers.find(item => item.uid === uid);
+      if (u) {
+        await window.setDoc(window.doc(window.firebaseDb, 'users', uid), {
+          ...u,
+          isBlocked: !u.isBlocked
+        });
+      }
+    }
+
+    async function deleteUser(uid) {
+      if (confirm('এই ইউজারের ডেটা মুছে ফেলতে চান?')) {
+        await window.deleteDoc(window.doc(window.firebaseDb, 'users', uid));
+      }
+    }
+
+    function openNewTournamentModal() {
+      document.getElementById('modalTournId').value = '';
+      document.getElementById('modalTournTitle').value = '';
+      document.getElementById('modalTournImg').value = '';
+      document.getElementById('modalTournDesc').value = '';
+      document.getElementById('modalTournDate').value = '';
+      document.getElementById('modalTournFee').value = '';
+      openModal('editTournamentModal');
+    }
+
+    function openEditTournamentModal(id) {
+      const t = adminTournaments.find(item => item.id === id);
+      if (!t) return;
+      document.getElementById('modalTournId').value = t.id;
+      document.getElementById('modalTournTitle').value = t.title;
+      document.getElementById('modalTournImg').value = t.bannerUrl;
+      document.getElementById('modalTournDesc').value = t.description || '';
+      document.getElementById('modalTournDate').value = t.date;
+      document.getElementById('modalTournFee').value = t.entryFee;
+      document.getElementById('modalTournCat').value = t.category;
+      document.getElementById('modalTournStatus').value = t.status || 'upcoming';
+      openModal('editTournamentModal');
+    }
+
+    async function saveTournamentForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('modalTournId').value || 'tourn-' + Date.now();
+      const existing = adminTournaments.find(item => item.id === id);
+
+      const tournObj = {
+        id: id,
+        title: document.getElementById('modalTournTitle').value,
+        bannerUrl: document.getElementById('modalTournImg').value,
+        description: document.getElementById('modalTournDesc').value,
+        date: document.getElementById('modalTournDate').value,
+        entryFee: Number(document.getElementById('modalTournFee').value),
+        category: document.getElementById('modalTournCat').value,
+        status: document.getElementById('modalTournStatus').value,
+        isActive: existing ? existing.isActive : true
+      };
+
+      await window.setDoc(window.doc(window.firebaseDb, 'tournaments', id), tournObj);
+      closeModal('editTournamentModal');
+      alert('টুর্নামেন্ট সংরক্ষিত হয়েছে!');
+    }
+
+    async function saveAppSettings() {
+      const configData = {
+        bkashNumber: document.getElementById('adminBkashNum').value.trim(),
+        nagadNumber: document.getElementById('adminNagadNum').value.trim(),
+        paymentNote: document.getElementById('adminPayNote').value.trim(),
+        bannerText: document.getElementById('adminBannerTitle').value.trim(),
+        sliderUrl: document.getElementById('adminSliderUrl').value.trim(),
+        sliderTitle: document.getElementById('adminSliderTitle').value.trim()
+      };
+      await window.setDoc(window.doc(window.firebaseDb, 'settings', 'app_config'), configData, { merge: true });
+      alert('সেটিংস সফলভাবে আপডেট হয়েছে এবং ইউজার অ্যাপে যুক্ত হয়েছে!');
+    }
+
+    function setTab(tab, subFilter) {
+      ['Tournaments', 'Regs', 'Users', 'Payments', 'Content'].forEach(t => {
+        document.getElementById('panel' + t).classList.add('hidden');
+        document.getElementById('tab' + t).className = 'px-4 py-2 font-semibold rounded-lg bg-slate-800 text-slate-300 whitespace-nowrap';
+      });
+
+      if (tab === 'tournaments') {
+        document.getElementById('panelTournaments').classList.remove('hidden');
+        document.getElementById('tabTournaments').className = 'px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap';
+      } else if (tab === 'regs') {
+        document.getElementById('panelRegs').classList.remove('hidden');
+        document.getElementById('tabRegs').className = 'px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap';
+        if (subFilter) filterAdminRegs(subFilter);
+      } else if (tab === 'users') {
+        document.getElementById('panelUsers').classList.remove('hidden');
+        document.getElementById('tabUsers').className = 'px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap';
+      } else if (tab === 'payments') {
+        document.getElementById('panelPayments').classList.remove('hidden');
+        document.getElementById('tabPayments').className = 'px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap';
+      } else if (tab === 'content') {
+        document.getElementById('panelContent').classList.remove('hidden');
+        document.getElementById('tabContent').className = 'px-4 py-2 font-semibold rounded-lg bg-emerald-600 text-white whitespace-nowrap';
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Initialize Empty UI
+    renderStats();
+    renderTournaments();
+    renderRegistrations('All');
+    renderUsers();
+  </script>
+</body>
+</html>
